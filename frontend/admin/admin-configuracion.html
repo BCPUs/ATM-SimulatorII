@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Configuración del Cajero - Admin ATM</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a1f44; color: white; margin: 0; min-height: 100vh; padding: 20px; }
+    .login-box { max-width: 400px; margin: 100px auto; background: #111; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.6); }
+    .main { max-width: 800px; margin: 40px auto; background: #111; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.6); display: none; }
+    h2 { color: #4da6ff; text-align: center; }
+    label { display: block; margin: 15px 0 5px; font-weight: bold; }
+    input { width: 100%; padding: 12px; border-radius: 6px; border: none; box-sizing: border-box; }
+    button { padding: 12px 30px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+    button:hover { background: #0055aa; }
+    #mensaje { text-align: center; margin: 20px 0; font-weight: bold; }
+    .logout { text-align: center; margin: 50px 0; }
+  </style>
+</head>
+<body>
+
+<div id="adminLogin" class="login-box">
+  <h2>Login Administrador</h2>
+  <input id="adminUsuario" placeholder="Usuario (9999)" type="text">
+  <input id="adminClave" type="password" placeholder="Clave">
+  <button onclick="loginAdmin()">Ingresar</button>
+  <div id="msgLogin" style="color:#ff4444; margin-top:15px; font-weight:bold;"></div>
+</div>
+
+<div id="mainContent" class="main">
+  <h2>Configuración del Cajero</h2>
+
+  <label>Retiro Mínimo ($)</label>
+  <input id="retiroMinimo" type="number" min="1" value="5">
+
+  <label>Retiro Máximo ($)</label>
+  <input id="retiroMaximo" type="number" min="10" value="300">
+
+  <label>Límite Depósito Máximo ($)</label>
+  <input id="limiteDeposito" type="number" min="100" value="5000">
+
+  <label>Comisión Interbancaria ($)</label>
+  <input id="comisionInter" type="number" step="0.01" value="0.52">
+
+  <label>Comisión por Consulta ($)</label>
+  <input id="comisionConsulta" type="number" step="0.01" value="0.32">
+
+  <label>Máximos Intentos de Clave</label>
+  <input id="maxIntentos" type="number" min="1" max="10" value="3">
+
+  <button onclick="guardarConfig()">Guardar Configuración</button>
+  <div id="mensaje"></div>
+
+  <div class="logout">
+    <button onclick="cerrarSesion()">Cerrar Sesión</button>
+  </div>
+</div>
+
+<script>
+async function loginAdmin() {
+  const usuario = document.getElementById("adminUsuario").value.trim();
+  const clave = document.getElementById("adminClave").value.trim();
+  const msg = document.getElementById("msgLogin");
+
+  if (!usuario || !clave) {
+    msg.textContent = "Complete ambos campos";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/usuarios/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario, clave })
+    });
+
+    if (!res.ok) {
+      msg.textContent = await res.text();
+      return;
+    }
+
+    localStorage.setItem("adminLoggedIn", "true");
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    cargarConfigActual();
+  } catch (err) {
+    msg.textContent = "Error de conexión";
+  }
+}
+
+if (localStorage.getItem("adminLoggedIn") === "true") {
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+  cargarConfigActual();
+}
+
+function cerrarSesion() {
+  if (confirm("¿Cerrar sesión?")) {
+    localStorage.removeItem("adminLoggedIn");
+    location.reload();
+  }
+}
+
+async function cargarConfigActual() {
+  try {
+    const res = await fetch("http://localhost:3000/configuracion");
+    const configs = await res.json();
+    if (configs.length > 0) {
+      const c = configs[0];
+      document.getElementById("retiroMinimo").value = c.retiroMinimo || 5;
+      document.getElementById("retiroMaximo").value = c.retiroMaximo || 300;
+      document.getElementById("limiteDeposito").value = c.limiteDepositoMaximo || 5000;
+      document.getElementById("comisionInter").value = c.comisionInterbancaria || 0.52;
+      document.getElementById("comisionConsulta").value = c.comisionConsulta || 0.32;
+      document.getElementById("maxIntentos").value = c.maxIntentosClave || 3;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function guardarConfig() {
+  const datos = {
+    retiroMinimo: Number(document.getElementById("retiroMinimo").value),
+    retiroMaximo: Number(document.getElementById("retiroMaximo").value),
+    limiteDepositoMaximo: Number(document.getElementById("limiteDeposito").value),
+    comisionInterbancaria: Number(document.getElementById("comisionInter").value),
+    comisionConsulta: Number(document.getElementById("comisionConsulta").value),
+    maxIntentosClave: Number(document.getElementById("maxIntentos").value),
+    bancosPermitidos: ["BANCO PICHINCHA", "BANCO DEL PACÍFICO", "BANCO DE GUAYAQUIL"],
+    denominaciones: [5, 10, 20, 40, 50, 100]
+  };
+
+  try {
+    const res = await fetch("http://localhost:3000/configuracion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos)
+    });
+
+    if (res.ok) {
+      document.getElementById("mensaje").textContent = "Configuración guardada correctamente";
+      document.getElementById("mensaje").style.color = "#00cc66";
+    } else {
+      document.getElementById("mensaje").textContent = await res.text();
+    }
+  } catch (err) {
+    document.getElementById("mensaje").textContent = "Error al guardar";
+  }
+}
+</script>
+</body>
+</html>

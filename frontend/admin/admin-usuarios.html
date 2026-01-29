@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Usuarios - Admin ATM</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a1f44; color: white; margin: 0; min-height: 100vh; padding: 20px; }
+    .login-box { max-width: 400px; margin: 100px auto; background: #111; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.6); }
+    .main { max-width: 1200px; margin: 40px auto; background: #111; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.6); display: none; }
+    h2 { color: #4da6ff; text-align: center; }
+    input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: none; box-sizing: border-box; }
+    button { padding: 12px 25px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #0055aa; }
+    #btnActualizar { background: #2196F3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; border: 1px solid #444; text-align: left; }
+    th { background: #222; color: #4da6ff; }
+    #mensaje { text-align: center; margin: 15px 0; font-weight: bold; min-height: 24px; }
+    .exito { color: #00cc66; }
+    .logout { text-align: center; margin: 40px 0; }
+    .logout button { background: #cc0000; padding: 12px 40px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<!-- Login Admin -->
+<div id="adminLogin" class="login-box">
+  <h2>Login Administrador</h2>
+  <input id="adminUsuario" placeholder="Usuario (9999)" type="text">
+  <input id="adminClave" type="password" placeholder="Clave">
+  <button onclick="loginAdmin()">Ingresar</button>
+  <div id="msgLogin" style="color:#ff4444; margin-top:15px; font-weight:bold;"></div>
+</div>
+
+<!-- Contenido principal -->
+<div id="mainContent" class="main">
+  <h2>Gestión de Usuarios</h2>
+
+  <div style="background:#222; padding:20px; border-radius:10px; margin-bottom:30px;">
+    <input type="text" id="cuenta" placeholder="Número de Cuenta">
+    <input type="text" id="nombre" placeholder="Nombre completo">
+    <input type="text" id="clave" placeholder="Clave (4 dígitos)">
+    <input type="number" id="saldo" placeholder="Saldo inicial" min="0" step="0.01">
+    <select id="banco">
+      <option value="">Seleccione banco</option>
+      <option value="BANCO PICHINCHA">BANCO PICHINCHA</option>
+      <option value="BANCO DEL PACÍFICO">BANCO DEL PACÍFICO</option>
+      <option value="BANCO DE GUAYAQUIL">BANCO DE GUAYAQUIL</option>
+    </select>
+    <button onclick="crearUsuario()">Crear Usuario</button>
+    <button id="btnActualizar" onclick="actualizarUsuario()" style="display:none; background:#2196F3;">Actualizar</button>
+    <div id="mensaje"></div>
+  </div>
+
+  <h3>Lista de Usuarios</h3>
+  <table id="tablaUsuarios">
+    <thead>
+      <tr>
+        <th>Cuenta</th>
+        <th>Nombre</th>
+        <th>Saldo</th>
+        <th>Banco</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="logout">
+    <button onclick="cerrarSesion()">Cerrar Sesión</button>
+  </div>
+</div>
+
+<script>
+async function loginAdmin() {
+  const usuario = document.getElementById("adminUsuario").value.trim();
+  const clave = document.getElementById("adminClave").value.trim();
+  const msg = document.getElementById("msgLogin");
+  msg.textContent = "";
+
+  if (!usuario || !clave) {
+    msg.textContent = "Complete ambos campos";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/usuarios/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario, clave })
+    });
+
+    if (!res.ok) {
+      msg.textContent = await res.text();
+      return;
+    }
+
+    localStorage.setItem("adminLoggedIn", "true");
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    cargarUsuarios();
+  } catch (err) {
+    msg.textContent = "Error de conexión";
+  }
+}
+
+// Verificar sesión al cargar
+if (localStorage.getItem("adminLoggedIn") === "true") {
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+  cargarUsuarios();
+}
+
+function cerrarSesion() {
+  if (confirm("¿Cerrar sesión de administrador?")) {
+    localStorage.removeItem("adminLoggedIn");
+    location.reload();
+  }
+}
+
+async function cargarUsuarios() {
+  try {
+    const res = await fetch("http://localhost:3000/usuarios");
+    const usuarios = await res.json();
+    const tbody = document.querySelector("#tablaUsuarios tbody");
+    tbody.innerHTML = "";
+
+    usuarios.forEach(u => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u.numeroCuenta}</td>
+        <td>${u.nombre || '-'}</td>
+        <td>$${Number(u.saldo).toFixed(2)}</td>
+        <td>${u.banco || '-'}</td>
+        <td>${u.estado || 'ACTIVO'}</td>
+        <td>
+          <button onclick="bloquearUsuario('${u.numeroCuenta}', '${u.estado}')" style="background:${u.estado==='BLOQUEADO'?'#00cc66':'#cc0000'}; padding:5px 10px; font-size:12px;">
+            ${u.estado==='BLOQUEADO'?'Desbloquear':'Bloquear'}
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    document.getElementById("mensaje").textContent = "Error al cargar usuarios";
+  }
+}
+
+function editarUsuario(cuenta) {
+  // Esta función es opcional, puedes implementarla si quieres editar usuarios
+  alert("Función editar en desarrollo - Usa el formulario para crear nuevos");
+}
+
+async function bloquearUsuario(cuenta, estadoActual) {
+  const nuevoEstado = estadoActual === "BLOQUEADO" ? "ACTIVO" : "BLOQUEADO";
+  if (confirm(`¿${nuevoEstado === "BLOQUEADO" ? "Bloquear" : "Desbloquear"} la cuenta ${cuenta}?`)) {
+    try {
+      await fetch(`http://localhost:3000/usuarios/${cuenta}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+      cargarUsuarios();
+    } catch (err) {
+      alert("Error al cambiar estado");
+    }
+  }
+}
+
+async function crearUsuario() {
+  const cuenta = document.getElementById("cuenta").value.trim();
+  const nombre = document.getElementById("nombre").value.trim();
+  const clave = document.getElementById("clave").value.trim();
+  const saldo = Number(document.getElementById("saldo").value);
+  const banco = document.getElementById("banco").value;
+
+  if (!cuenta || !nombre || !clave || !banco) {
+    document.getElementById("mensaje").textContent = "Complete todos los campos obligatorios";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/usuarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        numeroCuenta: cuenta,
+        nombre: nombre.toUpperCase(),
+        clave,
+        saldo,
+        banco: banco.toUpperCase(),
+        estado: "ACTIVO",
+        intentosFallidos: 0,
+        fechaCreacion: new Date(),
+        primeraVez: true
+      })
+    });
+
+    if (res.ok) {
+      document.getElementById("mensaje").textContent = "Usuario creado correctamente";
+      document.getElementById("mensaje").style.color = "#00cc66";
+      document.getElementById("cuenta").value = "";
+      document.getElementById("nombre").value = "";
+      document.getElementById("clave").value = "";
+      document.getElementById("saldo").value = "";
+      document.getElementById("banco").value = "";
+      cargarUsuarios();
+    } else {
+      document.getElementById("mensaje").textContent = await res.text();
+    }
+  } catch (err) {
+    document.getElementById("mensaje").textContent = "Error al crear usuario";
+  }
+}
+</script>
+</body>
+</html>

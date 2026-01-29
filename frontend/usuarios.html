@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Usuarios - ATM Simulator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
+    .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    input { display: block; width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; }
+    button { padding: 10px 20px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #btnActualizar { background: #2196F3; }
+    #btnActualizar:hover { background: #1e88e5; }
+    #listaUsuarios { margin-top: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f2f2f2; }
+    .mensaje { margin: 15px 0; padding: 10px; border-radius: 4px; }
+    .exito { background: #dff0d8; color: #3c763d; }
+    .error { background: #f2dede; color: #a94442; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Gestión de Usuarios</h2>
+
+  <input type="text" id="cuenta" placeholder="Número de Cuenta (ej: 1001)">
+  <input type="text" id="nombre" placeholder="Nombre completo">
+  <input type="text" id="clave" placeholder="Clave (PIN)">
+  <input type="number" id="saldo" placeholder="Saldo inicial" min="0" step="0.01">
+  <select id="banco">
+    <option value="">Seleccione banco</option>
+    <option value="Banco Pichincha">Banco Pichincha</option>
+    <option value="Banco del Pacífico">Banco del Pacífico</option>
+    <option value="Banco de Guayaquil">Banco de Guayaquil</option>
+  </select>
+
+  <button onclick="crear()">Crear Nuevo Usuario</button>
+  <button id="btnActualizar" onclick="actualizar()" style="display:none;">Actualizar Usuario</button>
+
+  <div id="mensaje" class="mensaje"></div>
+
+  <div id="listaUsuarios">
+    <h3>Usuarios Existentes</h3>
+    <table id="tablaUsuarios">
+      <thead>
+        <tr>
+          <th>Cuenta</th>
+          <th>Nombre</th>
+          <th>Saldo</th>
+          <th>Banco</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const baseURL = "http://localhost:3000/usuarios";
+let editandoCuenta = null;
+
+async function cargarUsuarios() {
+  try {
+    const res = await fetch(baseURL);
+    if (!res.ok) throw new Error("Error al cargar usuarios");
+    
+    const usuarios = await res.json();
+    const tbody = document.querySelector("#tablaUsuarios tbody");
+    tbody.innerHTML = "";
+
+    usuarios.forEach(u => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u.numeroCuenta}</td>
+        <td>${u.nombre || '-'}</td>
+        <td>$${Number(u.saldo).toFixed(2)}</td>
+        <td>${u.banco || '-'}</td>
+        <td>${u.estado || 'activo'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    mostrarMensaje("No se pudieron cargar los usuarios: " + err.message, "error");
+  }
+}
+
+function mostrarMensaje(texto, tipo) {
+  const div = document.getElementById("mensaje");
+  div.textContent = texto;
+  div.className = "mensaje " + tipo;
+  setTimeout(() => { div.textContent = ""; div.className = "mensaje"; }, 5000);
+}
+
+function limpiarFormulario() {
+  document.getElementById("cuenta").value = "";
+  document.getElementById("nombre").value = "";
+  document.getElementById("clave").value = "";
+  document.getElementById("saldo").value = "";
+  document.getElementById("banco").value = "";
+  editandoCuenta = null;
+  document.getElementById("btnActualizar").style.display = "none";
+}
+
+async function crear() {
+  const cuenta = document.getElementById("cuenta").value.trim();
+  const nombre = document.getElementById("nombre").value.trim();
+  const clave = document.getElementById("clave").value.trim();
+  const saldo = Number(document.getElementById("saldo").value);
+  const banco = document.getElementById("banco").value;
+
+  if (!cuenta || !clave || !banco) {
+    mostrarMensaje("Número de cuenta, clave y banco son obligatorios", "error");
+    return;
+  }
+  if (isNaN(saldo) || saldo < 0) {
+    mostrarMensaje("Saldo debe ser un número mayor o igual a 0", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch(baseURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        numeroCuenta: cuenta,
+        nombre,
+        clave,
+        saldo,
+        banco,
+        estado: "activo",
+        intentosFallidos: 0,
+        fechaCreacion: new Date(),
+        primeraVez: true
+      })
+    });
+
+    if (res.ok) {
+      mostrarMensaje("Usuario creado correctamente", "exito");
+      limpiarFormulario();
+      cargarUsuarios();
+    } else {
+      const err = await res.text();
+      mostrarMensaje("Error: " + err, "error");
+    }
+  } catch (err) {
+    mostrarMensaje("Error al conectar", "error");
+  }
+}
+
+async function actualizar() {
+  if (!editandoCuenta) return;
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const clave = document.getElementById("clave").value.trim();
+  const saldo = Number(document.getElementById("saldo").value);
+  const banco = document.getElementById("banco").value;
+
+  try {
+    const res = await fetch(`${baseURL}/${editandoCuenta}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, clave, saldo, banco })
+    });
+
+    if (res.ok) {
+      mostrarMensaje("Usuario actualizado correctamente", "exito");
+      limpiarFormulario();
+      cargarUsuarios();
+    } else {
+      const err = await res.text();
+      mostrarMensaje("Error: " + err, "error");
+    }
+  } catch (err) {
+    mostrarMensaje("Error al conectar", "error");
+  }
+}
+
+// Cargar la lista al abrir la página
+cargarUsuarios();
+</script>
+
+</body>
+</html>

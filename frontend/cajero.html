@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador Cajero Automático</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a1f44; color: white; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; }
+    .atm-screen { width: 420px; height: 580px; background: #111; border-radius: 20px; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.8); position: relative; overflow: hidden; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .screen { display: none; }
+    .active { display: block; }
+    input, button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border-radius: 6px; border: none; }
+    button { background: #0066cc; color: white; cursor: pointer; font-weight: bold; }
+    button:hover { background: #0055aa; }
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .option-grid button { height: 70px; font-size: 18px; }
+    .back-btn { background: #cc0000; position: absolute; bottom: 20px; left: 20px; width: 120px; }
+    .mensaje { text-align: center; margin: 15px 0; font-size: 18px; color: #ffcc00; min-height: 60px; }
+  </style>
+</head>
+<body>
+
+<div class="atm-screen">
+  <div class="header">
+    <h1>CAJERO AUTOMÁTICO</h1>
+    <p>Bienvenido</p>
+  </div>
+
+  <!-- Login -->
+  <div id="loginScreen" class="screen active">
+    <h2>Ingrese sus datos</h2>
+    <input id="cuenta" placeholder="Número de Cuenta" type="text">
+    <input id="clave" type="password" placeholder="Clave (4 dígitos)" maxlength="4">
+    <button onclick="ingresar()">Continuar</button>
+  </div>
+
+  <!-- Cambio clave primera vez -->
+  <div id="cambioClaveObligatorio" class="screen">
+    <h2>Primera vez - Cambie su clave</h2>
+    <p>Por seguridad, debe cambiar su PIN ahora.</p>
+    <input id="nuevaClavePrimera" type="password" placeholder="Nueva clave (4 dígitos)" maxlength="4">
+    <button onclick="cambiarClavePrimeraVez()">Cambiar y continuar</button>
+  </div>
+
+  <!-- Menú principal -->
+  <div id="menuPrincipal" class="screen">
+    <h2>Menú Principal</h2>
+    <div class="option-grid">
+      <button onclick="mostrarRetiro()">Retirar</button>
+      <button onclick="mostrarDeposito()">Depositar</button>
+      <button onclick="mostrarCambioClave()">Cambiar Clave</button>
+      <button onclick="consultarSaldo()">Consultar Saldo</button>
+      <button id="btnReporte" onclick="generarReporte()" style="display:none;">Reporte Movimientos</button>
+    </div>
+    <button class="back-btn" onclick="salir()">Salir</button>
+  </div>
+
+  <!-- Retiro -->
+  <div id="retiroScreen" class="screen">
+    <h2>Retiro</h2>
+    <div class="option-grid">
+      <button onclick="retirarMonto(5)">$ 5</button>
+      <button onclick="retirarMonto(10)">$ 10</button>
+      <button onclick="retirarMonto(20)">$ 20</button>
+      <button onclick="retirarMonto(40)">$ 40</button>
+      <button onclick="retirarMonto(50)">$ 50</button>
+      <button onclick="retirarMonto(100)">$ 100</button>
+    </div>
+    <input id="otroMonto" type="number" placeholder="Otro monto" min="5" step="5">
+    <button onclick="retirarOtroMonto()">Retirar otro monto</button>
+    <div id="msgRetiro" class="mensaje"></div>
+    <button class="back-btn" onclick="volverMenu()">Volver</button>
+  </div>
+
+  <!-- Depósito -->
+  <div id="depositoScreen" class="screen">
+    <h2>Depósito</h2>
+    <input id="cuentaDestino" placeholder="Número de cuenta destino">
+    <input id="montoDeposito" type="number" placeholder="Monto a depositar" min="1">
+    <button onclick="realizarDeposito()">Depositar</button>
+    <div id="msgDeposito" class="mensaje"></div>
+    <button class="back-btn" onclick="volverMenu()">Volver</button>
+  </div>
+
+  <!-- Cambio de Clave -->
+  <div id="cambioClaveScreen" class="screen">
+    <h2>Cambio de Clave</h2>
+    <input id="claveActual" type="password" placeholder="Clave actual (4 dígitos)" maxlength="4">
+    <input id="nuevaClave" type="password" placeholder="Nueva clave (4 dígitos)" maxlength="4">
+    <button onclick="cambiarClaveNormal()">Cambiar</button>
+    <div id="msgClave" class="mensaje"></div>
+    <button class="back-btn" onclick="volverMenu()">Volver</button>
+  </div>
+</div>
+
+<script>
+let usuario = null;
+let configuracion = null;
+const { jsPDF } = window.jspdf;
+
+// Validar PIN: exactamente 4 dígitos
+function esPinValido(pin) {
+  return /^\d{4}$/.test(pin);
+}
+
+// Validar monto: entero positivo
+function esMontoValido(monto) {
+  return Number.isInteger(monto) && monto > 0;
+}
+
+// Función para registrar transacciones
+async function registrarTransaccion(tipo, monto = 0, saldoAnt = usuario?.saldo || 0, saldoFin = usuario?.saldo || 0) {
+  try {
+    await fetch("http://localhost:3000/transacciones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        numeroCuenta: usuario.numeroCuenta,
+        tipo: tipo.toUpperCase(),
+        monto,
+        saldoAnterior: saldoAnt,
+        saldoFinal: saldoFin,
+        fecha: new Date(),
+        descripcion: `${tipo} realizado`
+      })
+    });
+  } catch (err) {
+    console.error("Error registrando transacción:", err);
+  }
+}
+
+async function ingresar() {
+  const numero = document.getElementById("cuenta").value.trim();
+  const pin = document.getElementById("clave").value.trim();
+
+  if (!numero || !pin) return alert("Complete los campos");
+
+  if (!esPinValido(pin)) {
+    alert("La clave debe ser exactamente 4 dígitos numéricos");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/usuarios/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ numeroCuenta: numero, clave: pin })
+    });
+
+    if (!res.ok) {
+      alert(await res.text());
+      return;
+    }
+
+    usuario = await res.json();
+
+    const resConfig = await fetch("http://localhost:3000/configuracion");
+    const configs = await resConfig.json();
+    configuracion = configs[0] || {};
+
+    if (!configuracion.bancosPermitidos?.includes(usuario.banco)) {
+      alert("Banco no autorizado para usar este cajero");
+      return location.reload();
+    }
+
+    document.getElementById("btnReporte").style.display = 
+      (usuario.banco === "BANCO PICHINCHA") ? "block" : "none";
+
+    document.getElementById("loginScreen").classList.remove("active");
+
+    if (usuario.primeraVez === true) {
+      document.getElementById("cambioClaveObligatorio").classList.add("active");
+    } else {
+      document.getElementById("menuPrincipal").classList.add("active");
+    }
+  } catch (err) {
+    alert("Error al conectar con el servidor");
+  }
+}
+
+async function cambiarClavePrimeraVez() {
+  const nueva = document.getElementById("nuevaClavePrimera").value.trim();
+
+  if (!esPinValido(nueva)) {
+    alert("La nueva clave debe ser exactamente 4 dígitos numéricos");
+    return;
+  }
+
+  try {
+    await fetch(`http://localhost:3000/usuarios/${usuario.numeroCuenta}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clave: nueva, primeraVez: false })
+    });
+
+    usuario.primeraVez = false;
+
+    // Registrar cambio de clave inicial
+    await registrarTransaccion("CAMBIO");
+
+    alert("Clave cambiada correctamente. ¡Bienvenido!");
+    document.getElementById("cambioClaveObligatorio").classList.remove("active");
+    document.getElementById("menuPrincipal").classList.add("active");
+  } catch (err) {
+    alert("Error al cambiar la clave");
+  }
+}
+
+function mostrarRetiro() { cambiarPantalla("retiroScreen"); }
+function mostrarDeposito() { cambiarPantalla("depositoScreen"); }
+function mostrarCambioClave() { cambiarPantalla("cambioClaveScreen"); }
+
+function cambiarPantalla(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById("msgRetiro").textContent = "";
+  document.getElementById("msgDeposito").textContent = "";
+  document.getElementById("msgClave").textContent = "";
+}
+
+function volverMenu() {
+  cambiarPantalla("menuPrincipal");
+}
+
+async function procesarRetiro(monto) {
+  const msg = document.getElementById("msgRetiro");
+  msg.textContent = "Procesando retiro...";
+
+  if (!esMontoValido(monto)) {
+    msg.textContent = "Monto inválido (debe ser número entero positivo)";
+    return;
+  }
+
+  let comision = 0;
+  if (usuario.banco !== "BANCO PICHINCHA") {
+    comision = configuracion.comisionInterbancaria || 0.52;
+    const aceptar = confirm(`Esta operación genera comisión de $${comision.toFixed(2)}\n¿Continuar?`);
+    if (!aceptar) {
+      msg.textContent = "Transacción cancelada";
+      setTimeout(() => location.reload(), 1800);
+      return;
+    }
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/cajero/retirar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ numeroCuenta: usuario.numeroCuenta, monto })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText);
+    }
+
+    const data = await res.json();
+    let saldoActual = data.nuevoSaldo;
+
+    if (comision > 0) {
+      const saldoFinal = saldoActual - comision;
+      if (saldoFinal < 0) throw new Error("Saldo insuficiente para cubrir la comisión");
+
+      await fetch(`http://localhost:3000/usuarios/${usuario.numeroCuenta}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ saldo: saldoFinal })
+      });
+      saldoActual = saldoFinal;
+    }
+
+    usuario.saldo = saldoActual;
+    msg.textContent = `¡Retiro exitoso! Nuevo saldo: $${usuario.saldo.toFixed(2)}`;
+    setTimeout(() => location.reload(), 3000); // Sale al login después de ver el mensaje
+  } catch (err) {
+    // Manejo mejorado de errores del backend
+    if (err.message.includes("no tiene suficiente dinero") || 
+        err.message.includes("saldoDisponible") || 
+        err.message.includes("fondos suficientes")) {
+      msg.textContent = "El cajero no tiene fondos suficientes en este momento. Intente más tarde.";
+    } else if (err.message.includes("fuera de servicio") || 
+               err.message.includes("FUERA_SERVICIO")) {
+      msg.textContent = "El cajero está temporalmente fuera de servicio.";
+    } else if (err.message.includes("denominaciones") || 
+               err.message.includes("múltiplo")) {
+      msg.textContent = "Monto no permitido por las denominaciones disponibles del cajero.";
+    } else {
+      msg.textContent = err.message || "Error al procesar el retiro. Intente nuevamente.";
+    }
+    
+    setTimeout(() => location.reload(), 4000);
+  }
+}
+
+async function retirarMonto(monto) {
+  await procesarRetiro(monto);
+}
+
+async function retirarOtroMonto() {
+  const montoStr = document.getElementById("otroMonto").value.trim();
+  const monto = Number(montoStr);
+
+  if (!esMontoValido(monto) || monto < 5 || monto % 5 !== 0) {
+    alert("Monto inválido: debe ser entero positivo, mínimo $5 y múltiplo de 5");
+    return;
+  }
+  if (monto > 300) return alert("Máximo $300 por transacción");
+  await procesarRetiro(monto);
+}
+
+async function realizarDeposito() {
+  const destino = document.getElementById("cuentaDestino").value.trim();
+  const montoStr = document.getElementById("montoDeposito").value.trim();
+  const monto = Number(montoStr);
+  const msg = document.getElementById("msgDeposito");
+  msg.textContent = "Procesando depósito...";
+
+  if (!destino || !esMontoValido(monto)) {
+    msg.textContent = "Monto inválido: debe ser número entero positivo";
+    return;
+  }
+
+  if (destino === usuario.numeroCuenta) {
+    msg.textContent = "No se puede depositar a la misma cuenta. Use otra cuenta destino.";
+    setTimeout(() => location.reload(), 4000);
+    return;
+  }
+
+  if (monto > 5000) {
+    msg.textContent = "El monto máximo por depósito es $5,000";
+    setTimeout(() => location.reload(), 4000);
+    return;
+  }
+
+  let comision = 0;
+  let totalRequerido = monto;
+
+  if (usuario.banco !== "BANCO PICHINCHA") {
+    comision = configuracion.comisionInterbancaria || 0.52;
+    totalRequerido += comision;
+  }
+
+  if (usuario.saldo < totalRequerido) {
+    msg.textContent = "Saldo insuficiente para realizar el depósito" + (comision > 0 ? " (incluyendo comisión)" : "");
+    setTimeout(() => location.reload(), 4000);
+    return;
+  }
+
+  let comisionAceptada = true;
+  if (comision > 0) {
+    const aceptar = confirm(`Esta operación genera comisión de $${comision.toFixed(2)}\n¿Continuar?`);
+    if (!aceptar) {
+      msg.textContent = "Transacción cancelada";
+      setTimeout(() => location.reload(), 1800);
+      return;
+    }
+  }
+
+  try {
+    const resCheck = await fetch("http://localhost:3000/usuarios");
+    const usuarios = await resCheck.json();
+    const existe = usuarios.find(u => u.numeroCuenta === destino);
+    if (!existe) throw new Error("Cuenta destino no encontrada");
+
+    const res = await fetch("http://localhost:3000/cajero/depositar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ numeroCuenta: destino, monto })
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    if (comision > 0) {
+      const nuevoSaldo = usuario.saldo - comision;
+      await fetch(`http://localhost:3000/usuarios/${usuario.numeroCuenta}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ saldo: nuevoSaldo })
+      });
+      usuario.saldo = nuevoSaldo;
+    }
+
+    msg.textContent = `Depósito exitoso a cuenta ${destino}`;
+    setTimeout(() => location.reload(), 3000);
+  } catch (err) {
+    msg.textContent = err.message;
+    setTimeout(() => location.reload(), 4000);
+  }
+}
+
+async function consultarSaldo() {
+  let comision = 0;
+  if (usuario.banco !== "BANCO PICHINCHA") {
+    const aceptar = confirm(`La consulta genera comisión de $0.32\n¿Continuar?`);
+    if (!aceptar) return alert("Consulta cancelada");
+    comision = 0.32;
+  }
+
+  if (comision > 0) {
+    const nuevoSaldo = usuario.saldo - comision;
+    await fetch(`http://localhost:3000/usuarios/${usuario.numeroCuenta}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ saldo: nuevoSaldo })
+    });
+    usuario.saldo = nuevoSaldo;
+  }
+
+  alert(`Saldo actual: $${usuario.saldo.toFixed(2)}${comision > 0 ? `\nComisión aplicada: $${comision}` : ''}`);
+
+  // Registrar la consulta
+  await registrarTransaccion("CONSULTA", 0, usuario.saldo, usuario.saldo);
+
+  setTimeout(() => location.reload(), 3000);
+}
+
+async function generarReporte() {
+  let comision = 0;
+  if (usuario.banco !== "BANCO PICHINCHA") {
+    const aceptar = confirm(`El reporte genera comisión de $0.32\n¿Desea continuar?`);
+    if (!aceptar) return alert("Reporte cancelado");
+    comision = 0.32;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/transacciones");
+    if (!res.ok) throw new Error("Error al obtener transacciones");
+
+    const todas = await res.json();
+    const misTransacciones = todas.filter(t => t.numeroCuenta === usuario.numeroCuenta);
+
+    if (misTransacciones.length === 0) {
+      alert("No hay transacciones para mostrar en esta cuenta");
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Reporte de Movimientos - Cuenta ${usuario.numeroCuenta}`, 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Nombre: ${usuario.nombre || 'Usuario'}`, 20, 30);
+    doc.text(`Fecha: ${new Date().toLocaleString("es-EC")}`, 20, 38);
+
+    let y = 50;
+    doc.text("Fecha                  Tipo         Monto    Saldo Final", 20, y);
+    y += 8;
+
+    misTransacciones.forEach(t => {
+      const fecha = new Date(t.fecha).toLocaleString("es-EC").slice(0, 16);
+      const tipo = t.tipo.padEnd(12);
+      const monto = `$${Number(t.monto || 0).toFixed(2)}`.padEnd(10);
+      const saldo = `$${Number(t.saldoFinal || 0).toFixed(2)}`;
+      doc.text(`${fecha}   ${tipo} ${monto} ${saldo}`, 20, y);
+      y += 8;
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    if (comision > 0) {
+      doc.text(`Comisión por reporte: $${comision.toFixed(2)}`, 20, y + 10);
+    }
+
+    doc.save(`reporte_${usuario.numeroCuenta}_${new Date().toISOString().split('T')[0]}.pdf`);
+  } catch (err) {
+    console.error(err);
+    alert("Error al generar el reporte: " + err.message);
+  }
+}
+
+async function cambiarClaveNormal() {
+  const actual = document.getElementById("claveActual").value.trim();
+  const nueva = document.getElementById("nuevaClave").value.trim();
+  const msg = document.getElementById("msgClave");
+
+  if (!esPinValido(actual) || !esPinValido(nueva)) {
+    msg.textContent = "Ambas claves deben ser exactamente 4 dígitos numéricos";
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:3000/usuarios/${usuario.numeroCuenta}/cambiar-clave`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ claveActual: actual, nuevaClave: nueva })
+    });
+
+    const texto = await res.text();
+
+    if (res.ok) {
+      msg.textContent = "Clave cambiada correctamente. Saliendo del sistema...";
+
+      // Registrar cambio de clave
+      await registrarTransaccion("CAMBIO");
+
+      setTimeout(() => location.reload(), 2500);
+    } else {
+      msg.textContent = texto || "Error al cambiar la clave";
+    }
+  } catch (err) {
+    msg.textContent = "Error al conectar con el servidor";
+  }
+}
+
+function salir() {
+  if (confirm("¿Desea salir del sistema?")) {
+    location.reload();
+  }
+}
+</script>
+</body>
+</html>

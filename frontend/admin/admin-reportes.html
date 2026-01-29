@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes Globales - Panel Admin ATM</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a1f44; color: white; margin: 0; min-height: 100vh; padding: 20px; }
+    .login-container { max-width: 400px; margin: 100px auto; background: #111; padding: 40px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.6); text-align: center; }
+    .content-container { max-width: 1400px; margin: 40px auto; background: #111; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.6); display: none; }
+    h2 { color: #4da6ff; text-align: center; }
+    .search-bar { margin: 20px 0; text-align: center; display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; }
+    .search-bar input { width: 400px; padding: 14px; font-size: 16px; border-radius: 8px; border: none; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0; }
+    .stat-card { background: #222; border-radius: 10px; padding: 20px; text-align: center; }
+    .stat-card h3 { margin: 0 0 10px; color: #4da6ff; }
+    .stat-card p { margin: 0; font-size: 28px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+    th, td { padding: 12px; border: 1px solid #444; text-align: left; }
+    th { background: #222; color: #4da6ff; position: sticky; top: 0; z-index: 1; }
+    #msgAdmin { color: #ff4444; font-weight: bold; margin: 15px 0; text-align: center; min-height: 24px; }
+    .logout { text-align: center; margin: 40px 0; }
+    .logout button, .export-btn { padding: 12px 30px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; margin: 0 10px; }
+    .logout button { background: #cc0000; color: white; }
+    .logout button:hover { background: #aa0000; }
+    .export-btn { background: #4CAF50; color: white; }
+    .export-btn:hover { background: #388E3C; }
+  </style>
+</head>
+<body>
+
+<!-- Login de Administrador -->
+<div id="adminLogin" class="login-container">
+  <h2>Login Administrador</h2>
+  <input id="adminUsuario" placeholder="Usuario (ej: 9999)" type="text">
+  <input id="adminClave" type="password" placeholder="Clave">
+  <button onclick="adminLogin()">Ingresar</button>
+  <div id="msgAdmin"></div>
+</div>
+
+<!-- Contenido de reportes -->
+<div id="contenidoAdmin" class="content-container">
+  <h2>Reportes Globales del Sistema</h2>
+
+  <div class="search-bar">
+    <input id="buscadorCuenta" placeholder="Buscar por número de cuenta..." type="text" onkeyup="filtrarTransacciones()">
+    <button class="export-btn" onclick="exportarCSV()">Exportar Visible a CSV</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <h3>Total Transacciones</h3>
+      <p id="totalTransacciones">0</p>
+    </div>
+    <div class="stat-card">
+      <h3>Saldo Total en Cuentas</h3>
+      <p id="saldoTotal">$0.00</p>
+    </div>
+  </div>
+
+  <h3>Transacciones (filtradas)</h3>
+  <table id="tablaTransacciones">
+    <thead>
+      <tr>
+        <th>Cuenta</th>
+        <th>Tipo</th>
+        <th>Monto</th>
+        <th>Saldo Anterior</th>
+        <th>Saldo Final</th>
+        <th>Fecha</th>
+        <th>Descripción</th>
+      </tr>
+    </thead>
+    <tbody id="tbodyTransacciones"></tbody>
+  </table>
+
+  <div class="logout">
+    <button onclick="logoutAdmin()">Cerrar Sesión</button>
+  </div>
+</div>
+
+<script>
+// Login de admin
+async function adminLogin() {
+  const usuario = document.getElementById("adminUsuario").value.trim();
+  const clave = document.getElementById("adminClave").value.trim();
+  const msg = document.getElementById("msgAdmin");
+  msg.textContent = "";
+
+  if (!usuario || !clave) {
+    msg.textContent = "Complete usuario y clave";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/usuarios/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usuario, clave })
+    });
+
+    if (!res.ok) {
+      msg.textContent = await res.text();
+      return;
+    }
+
+    localStorage.setItem("adminLoggedIn", "true");
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("contenidoAdmin").style.display = "block";
+
+    cargarReportes();
+  } catch (err) {
+    msg.textContent = "Error al conectar con el servidor";
+    console.error("Error en login:", err);
+  }
+}
+
+// Verificar sesión al cargar la página
+if (localStorage.getItem("adminLoggedIn") === "true") {
+  document.getElementById("adminLogin").style.display = "none";
+  document.getElementById("contenidoAdmin").style.display = "block";
+  cargarReportes();
+} else {
+  document.getElementById("adminLogin").style.display = "block";
+  document.getElementById("contenidoAdmin").style.display = "none";
+}
+
+// Cerrar sesión
+function logoutAdmin() {
+  if (confirm("¿Desea cerrar sesión?")) {
+    localStorage.removeItem("adminLoggedIn");
+    window.location.href = "admin-login.html";
+  }
+}
+
+// Cargar reportes
+async function cargarReportes() {
+  try {
+    console.log("Intentando cargar transacciones...");
+    const resTrans = await fetch("http://localhost:3000/transacciones");
+    console.log("Respuesta fetch transacciones:", resTrans.status, resTrans.statusText);
+
+    if (!resTrans.ok) {
+      const errText = await resTrans.text();
+      throw new Error(`Error ${resTrans.status}: ${errText}`);
+    }
+
+    window.transaccionesGlobales = await resTrans.json();
+    console.log("Transacciones cargadas:", window.transaccionesGlobales.length);
+
+    // Estadísticas
+    document.getElementById("totalTransacciones").textContent = window.transaccionesGlobales.length;
+
+    const resUsuarios = await fetch("http://localhost:3000/usuarios");
+    if (!resUsuarios.ok) throw new Error("Error al cargar usuarios");
+    const usuarios = await resUsuarios.json();
+    const saldoTotal = usuarios.reduce((sum, u) => sum + (u.saldo || 0), 0);
+    document.getElementById("saldoTotal").textContent = `$${saldoTotal.toFixed(2)}`;
+
+    // Mostrar todas inicialmente
+    mostrarTransacciones(window.transaccionesGlobales);
+  } catch (err) {
+    console.error("Error al cargar reportes:", err);
+    document.getElementById("msgAdmin").textContent = "Error al cargar reportes: " + err.message;
+  }
+}
+
+// Mostrar transacciones
+function mostrarTransacciones(transacciones) {
+  const tbody = document.getElementById("tbodyTransacciones");
+  tbody.innerHTML = "";
+
+  if (transacciones.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No hay transacciones</td></tr>";
+    return;
+  }
+
+  transacciones.forEach(t => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${t.numeroCuenta || '-'}</td>
+      <td>${t.tipo || '-'}</td>
+      <td>$${Number(t.monto || 0).toFixed(2)}</td>
+      <td>$${Number(t.saldoAnterior || 0).toFixed(2)}</td>
+      <td>$${Number(t.saldoFinal || 0).toFixed(2)}</td>
+      <td>${new Date(t.fecha).toLocaleString("es-EC")}</td>
+      <td>${t.descripcion || '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Filtro en tiempo real
+function filtrarTransacciones() {
+  const filtro = document.getElementById("buscadorCuenta").value.trim().toLowerCase();
+  const filtradas = window.transaccionesGlobales.filter(t => 
+    (t.numeroCuenta || '').toLowerCase().includes(filtro)
+  );
+  mostrarTransacciones(filtradas);
+}
+
+// Exportar solo lo visible (Versión 2)
+function exportarCSV() {
+  const filas = Array.from(document.querySelectorAll("#tbodyTransacciones tr")).map(tr => {
+    const celdas = tr.querySelectorAll("td");
+    return [
+      celdas[0]?.textContent || '',
+      celdas[1]?.textContent || '',
+      celdas[2]?.textContent || '',
+      celdas[3]?.textContent || '',
+      celdas[4]?.textContent || '',
+      celdas[5]?.textContent || '',
+      celdas[6]?.textContent || ''
+    ];
+  }).filter(fila => fila.some(v => v !== '')); // eliminar filas vacías
+
+  if (filas.length === 0) {
+    alert("No hay transacciones visibles para exportar");
+    return;
+  }
+
+  const cabeceras = ["Cuenta", "Tipo", "Monto", "Saldo Anterior", "Saldo Final", "Fecha", "Descripción"];
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += cabeceras.join(",") + "\n";
+
+  filas.forEach(fila => {
+    csvContent += fila.map(v => `"${v.replace(/"/g, '""')}"`).join(",") + "\n";
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "reporte_filtrado_" + new Date().toISOString().split('T')[0] + ".csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+</script>
+
+</body>
+</html>

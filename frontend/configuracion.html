@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Configuración ATM - Simulator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    input, select { display: block; width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; }
+    button { padding: 10px 20px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #listaConfig { margin-top: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f2f2f2; }
+    .mensaje { margin: 15px 0; padding: 10px; border-radius: 4px; }
+    .exito { background: #dff0d8; color: #3c763d; }
+    .error { background: #f2dede; color: #a94442; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Configuración del Cajero Automático</h2>
+  
+  <label>Múltiplo de retiro:</label>
+  <input id="multiplo" type="number" min="1" placeholder="Ej: 10">
+
+  <label>Retiro mínimo:</label>
+  <input id="min" type="number" min="0" placeholder="Ej: 10">
+
+  <label>Retiro máximo:</label>
+  <input id="max" type="number" min="1" placeholder="Ej: 300">
+
+  <label>Máximo intentos fallidos:</label>
+  <input id="intentos" type="number" min="1" max="10" placeholder="Ej: 3">
+
+  <label>Comisión interbancaria ($):</label>
+  <input id="comision" type="number" step="0.01" min="0" placeholder="Ej: 0.52">
+
+  <button onclick="guardarConfig()">Guardar Configuración</button>
+
+  <div id="mensaje" class="mensaje"></div>
+
+  <div id="listaConfig">
+    <h3>Configuraciones Existentes</h3>
+    <table id="tablaConfig">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Retiro Máx</th>
+          <th>Comisión</th>
+          <th>Intentos Máx</th>
+          <th>Fecha (aprox)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function cargarConfiguraciones() {
+  try {
+    const res = await fetch("http://localhost:3000/configuracion");
+    if (!res.ok) throw new Error("Error al cargar configuraciones");
+    
+    const configs = await res.json();
+    const tbody = document.querySelector("#tablaConfig tbody");
+    tbody.innerHTML = "";
+
+    configs.forEach(c => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${c._id}</td>
+        <td>${c.retiroMaximo || '-'}</td>
+        <td>$${Number(c.comisionInterbancaria || 0).toFixed(2)}</td>
+        <td>${c.maxIntentosClave || '-'}</td>
+        <td>${new Date(c.fecha || Date.now()).toLocaleDateString("es-EC")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    mostrarMensaje("No se pudieron cargar configuraciones: " + err.message, "error");
+  }
+}
+
+function mostrarMensaje(texto, tipo) {
+  const div = document.getElementById("mensaje");
+  div.textContent = texto;
+  div.className = "mensaje " + tipo;
+  setTimeout(() => { div.textContent = ""; div.className = "mensaje"; }, 5000);
+}
+
+function limpiarCampos() {
+  document.getElementById("multiplo").value = "";
+  document.getElementById("min").value = "";
+  document.getElementById("max").value = "";
+  document.getElementById("intentos").value = "";
+  document.getElementById("comision").value = "";
+}
+
+async function guardarConfig() {
+  const multiplo = Number(document.getElementById("multiplo").value);
+  const min = Number(document.getElementById("min").value);
+  const max = Number(document.getElementById("max").value);
+  const intentos = Number(document.getElementById("intentos").value);
+  const comision = Number(document.getElementById("comision").value);
+
+  if (isNaN(multiplo) || multiplo <= 0) {
+    mostrarMensaje("Múltiplo de retiro inválido", "error");
+    return;
+  }
+  if (isNaN(max) || max <= 0) {
+    mostrarMensaje("Retiro máximo inválido", "error");
+    return;
+  }
+  if (isNaN(intentos) || intentos < 1) {
+    mostrarMensaje("Intentos máximos inválidos", "error");
+    return;
+  }
+
+  const datos = {
+    multiploRetiro: multiplo,
+    retiroMinimo: min,
+    retiroMaximo: max,
+    maxIntentosClave: intentos,
+    comisionInterbancaria: comision,
+    bancosPermitidos: ["Banco Pichincha", "Banco del Pacífico", "Banco de Guayaquil"],
+    denominaciones: [10, 20, 50, 100],
+    fecha: new Date()
+  };
+
+  try {
+    const res = await fetch("http://localhost:3000/configuracion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos)
+    });
+
+    if (res.ok) {
+      mostrarMensaje("Configuración guardada correctamente", "exito");
+      limpiarCampos();
+      cargarConfiguraciones();
+    } else {
+      const err = await res.text();
+      mostrarMensaje("Error: " + err, "error");
+    }
+  } catch (err) {
+    mostrarMensaje("Error al conectar", "error");
+  }
+}
+
+// Cargar al abrir
+cargarConfiguraciones();
+</script>
+
+</body>
+</html>

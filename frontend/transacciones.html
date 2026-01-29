@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro y Lista de Transacciones - ATM Simulator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
+    .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    input, select { display: block; width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; }
+    button { padding: 10px 20px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    #listaTransacciones { margin-top: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f2f2f2; }
+    .mensaje { margin: 15px 0; padding: 10px; border-radius: 4px; }
+    .exito { background: #dff0d8; color: #3c763d; }
+    .error { background: #f2dede; color: #a94442; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Registrar Transacción Manual (Admin)</h2>
+
+  <input id="cuenta" placeholder="Número de Cuenta">
+  <select id="tipo">
+    <option value="">Seleccione tipo</option>
+    <option value="retiro">Retiro</option>
+    <option value="deposito">Depósito</option>
+    <option value="consulta">Consulta</option>
+    <option value="comision">Comisión</option>
+    <option value="cambio_clave">Cambio de Clave</option>
+  </select>
+  <input id="monto" type="number" placeholder="Monto" min="0" step="0.01">
+  <input id="saldoAnt" type="number" placeholder="Saldo Anterior" min="0" step="0.01">
+  <input id="saldoFin" type="number" placeholder="Saldo Final" min="0" step="0.01">
+
+  <button onclick="registrar()">Registrar Transacción</button>
+
+  <div id="mensaje" class="mensaje"></div>
+
+  <div id="listaTransacciones">
+    <h3>Transacciones Registradas</h3>
+    <table id="tablaTransacciones">
+      <thead>
+        <tr>
+          <th>Cuenta</th>
+          <th>Tipo</th>
+          <th>Monto</th>
+          <th>Saldo Ant.</th>
+          <th>Saldo Final</th>
+          <th>Fecha</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const baseURL = "http://localhost:3000/transacciones";
+
+async function cargarTransacciones() {
+  try {
+    const res = await fetch(baseURL);
+    if (!res.ok) throw new Error("Error al cargar transacciones");
+    
+    const transacciones = await res.json();
+    const tbody = document.querySelector("#tablaTransacciones tbody");
+    tbody.innerHTML = "";
+
+    transacciones.forEach(t => {
+      const fecha = new Date(t.fecha).toLocaleString("es-EC");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${t.numeroCuenta || '-'}</td>
+        <td>${t.tipo || '-'}</td>
+        <td>$${Number(t.monto || 0).toFixed(2)}</td>
+        <td>$${Number(t.saldoAnterior || 0).toFixed(2)}</td>
+        <td>$${Number(t.saldoFinal || 0).toFixed(2)}</td>
+        <td>${fecha}</td>
+        <td>${t.descripcion || '-'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    mostrarMensaje("No se pudieron cargar las transacciones: " + err.message, "error");
+  }
+}
+
+function mostrarMensaje(texto, tipo) {
+  const div = document.getElementById("mensaje");
+  div.textContent = texto;
+  div.className = "mensaje " + tipo;
+  setTimeout(() => { div.textContent = ""; div.className = "mensaje"; }, 6000);
+}
+
+function limpiarFormulario() {
+  document.getElementById("cuenta").value = "";
+  document.getElementById("tipo").value = "";
+  document.getElementById("monto").value = "";
+  document.getElementById("saldoAnt").value = "";
+  document.getElementById("saldoFin").value = "";
+}
+
+async function registrar() {
+  const cuenta = document.getElementById("cuenta").value.trim();
+  const tipo = document.getElementById("tipo").value;
+  const monto = Number(document.getElementById("monto").value);
+  const saldoAnt = Number(document.getElementById("saldoAnt").value);
+  const saldoFin = Number(document.getElementById("saldoFin").value);
+
+  if (!cuenta || !tipo) {
+    mostrarMensaje("Número de cuenta y tipo de transacción son obligatorios", "error");
+    return;
+  }
+  if (isNaN(monto) || monto < 0) {
+    mostrarMensaje("Monto debe ser un número válido", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch(baseURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        numeroCuenta: cuenta,
+        tipo,
+        monto,
+        saldoAnterior: saldoAnt,
+        saldoFinal: saldoFin,
+        fecha: new Date(),
+        descripcion: `Registro manual - ${tipo}`
+      })
+    });
+
+    if (res.ok) {
+      mostrarMensaje("Transacción registrada correctamente", "exito");
+      limpiarFormulario();
+      cargarTransacciones();
+    } else {
+      const err = await res.text();
+      mostrarMensaje("Error: " + err, "error");
+    }
+  } catch (err) {
+    mostrarMensaje("Error al conectar con el servidor", "error");
+  }
+}
+
+// Cargar lista al abrir la página
+cargarTransacciones();
+</script>
+
+</body>
+</html>

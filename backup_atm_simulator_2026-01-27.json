@@ -1,0 +1,633 @@
+{
+  "nombreBaseDatos": "atm_simulator",
+  "fechaExportacion": "2026-01-27T01:34:17.838Z",
+  "colecciones": {
+    "transacciones": [
+      {
+        "_id": "69693fa20a6ae5c7181e263f",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 50,
+        "saldoAnterior": 500,
+        "saldoFinal": 450,
+        "fecha": "2026-01-15T19:27:30.456Z",
+        "descripcion": "Retiro validado"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2640",
+        "numeroCuenta": "1002",
+        "tipo": "DEPOSITO",
+        "monto": 100,
+        "saldoAnterior": 800,
+        "saldoFinal": 900,
+        "fecha": "2026-01-15T19:27:30.456Z",
+        "descripcion": "Depósito validado"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2641",
+        "numeroCuenta": "1003",
+        "tipo": "CONSULTA",
+        "monto": 0,
+        "saldoAnterior": 300,
+        "saldoFinal": 300,
+        "fecha": "2026-01-15T19:27:30.456Z",
+        "descripcion": "Consulta realizada"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2642",
+        "numeroCuenta": "1004",
+        "tipo": "RETIRO",
+        "monto": 200,
+        "saldoAnterior": 1200,
+        "saldoFinal": 1000,
+        "fecha": "2026-01-15T19:27:30.457Z",
+        "descripcion": "Retiro ATM"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2643",
+        "numeroCuenta": "1005",
+        "tipo": "RETIRO",
+        "monto": 150,
+        "saldoAnterior": 50,
+        "saldoFinal": 200,
+        "fecha": "2026-01-15T19:27:30.457Z",
+        "descripcion": "Depósito ATM"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2644",
+        "numeroCuenta": "1006",
+        "tipo": "RETIRO",
+        "monto": 100,
+        "saldoAnterior": 600,
+        "saldoFinal": 500,
+        "fecha": "2026-01-15T19:27:30.457Z",
+        "descripcion": "Retiro ATM"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2647",
+        "numeroCuenta": "1009",
+        "tipo": "DEPOSITO",
+        "monto": 200,
+        "saldoAnterior": 1000,
+        "saldoFinal": 1200,
+        "fecha": "2026-01-15T19:27:30.457Z",
+        "descripcion": "Depósito ATM"
+      },
+      {
+        "_id": "69693fa20a6ae5c7181e2648",
+        "numeroCuenta": "1010",
+        "tipo": "RETIRO",
+        "monto": 100,
+        "saldoAnterior": 750,
+        "saldoFinal": 650,
+        "fecha": "2026-01-15T19:27:30.457Z",
+        "descripcion": "Retiro ATM"
+      },
+      {
+        "_id": "697584bb0c1eceb9cf4f360a",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 0,
+        "saldoAnterior": 49.68,
+        "saldoFinal": 49.68,
+        "fecha": "2026-01-25T02:49:31.755Z",
+        "descripcion": "Cambio de clave realizado"
+      },
+      {
+        "_id": "69758f5f1266337438df9e54",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 25,
+        "saldoAnterior": 49.68,
+        "saldoFinal": 74.68,
+        "fecha": "2026-01-25T03:34:55.233Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "69758f7e1266337438df9e55",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 20,
+        "saldoAnterior": 74.68,
+        "saldoFinal": 94.68,
+        "fecha": "2026-01-25T03:35:26.644Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "697592833ffe87cc52c1888c",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 11,
+        "saldoAnterior": 94.68,
+        "saldoFinal": 105.68,
+        "fecha": "2026-01-25T03:48:19.438Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "697593313ffe87cc52c1888d",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 20,
+        "saldoAnterior": 105.68,
+        "saldoFinal": 85.68,
+        "fecha": "2026-01-25T03:51:13.250Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "697593313ffe87cc52c1888e",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 20,
+        "saldoAnterior": 85.68,
+        "saldoFinal": 65.68,
+        "fecha": "2026-01-25T03:51:13.439Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "697593313ffe87cc52c1888f",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 40,
+        "saldoAnterior": 65.68,
+        "saldoFinal": 25.680000000000007,
+        "fecha": "2026-01-25T03:51:13.696Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "697593323ffe87cc52c18890",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 10,
+        "saldoAnterior": 25.680000000000007,
+        "saldoFinal": 15.680000000000007,
+        "fecha": "2026-01-25T03:51:14.003Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "697593f93ffe87cc52c18891",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 10,
+        "saldoAnterior": 2000,
+        "saldoFinal": 1990,
+        "fecha": "2026-01-25T03:54:33.590Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "697595463ffe87cc52c18892",
+        "numeroCuenta": "1003",
+        "tipo": "RETIRO",
+        "monto": 10,
+        "saldoAnterior": 219.12,
+        "saldoFinal": 209.12,
+        "fecha": "2026-01-25T04:00:06.084Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "697598bd3ffe87cc52c18893",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 400,
+        "saldoAnterior": 1990,
+        "saldoFinal": 2390,
+        "fecha": "2026-01-25T04:14:53.195Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "6975991b3ffe87cc52c18894",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 5000,
+        "saldoAnterior": 2390,
+        "saldoFinal": 7390,
+        "fecha": "2026-01-25T04:16:27.725Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "697599ac3ffe87cc52c18895",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 5000,
+        "saldoAnterior": 7390,
+        "saldoFinal": 12390,
+        "fecha": "2026-01-25T04:18:52.923Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "69759b5a3ffe87cc52c18896",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 0,
+        "saldoAnterior": 12390,
+        "saldoFinal": 12390,
+        "fecha": "2026-01-25T04:26:02.208Z",
+        "descripcion": "Cambio de clave realizado"
+      },
+      {
+        "_id": "6975a22db7558767d3b77525",
+        "numeroCuenta": "1003",
+        "tipo": "RETIRO",
+        "monto": 0,
+        "saldoAnterior": 206.07999999999998,
+        "saldoFinal": 206.07999999999998,
+        "fecha": "2026-01-25T04:55:09.750Z",
+        "descripcion": "Cambio de clave realizado"
+      },
+      {
+        "_id": "6975a5eab7558767d3b77526",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 100,
+        "saldoAnterior": 12390,
+        "saldoFinal": 12490,
+        "fecha": "2026-01-25T05:11:06.945Z",
+        "descripcion": "Depósito en cajero automático"
+      },
+      {
+        "_id": "6975a645b7558767d3b77527",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 0,
+        "saldoAnterior": 12490,
+        "saldoFinal": 12490,
+        "fecha": "2026-01-25T05:12:37.820Z",
+        "descripcion": "Cambio de clave realizado"
+      },
+      {
+        "_id": "6975a76ab7558767d3b77528",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 0,
+        "saldoAnterior": 12490,
+        "saldoFinal": 12490,
+        "fecha": "2026-01-25T05:17:30.837Z",
+        "descripcion": "Cambio de clave realizado"
+      },
+      {
+        "_id": "6975a7e1b7558767d3b77529",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 0,
+        "saldoAnterior": 12490,
+        "saldoFinal": 12490,
+        "fecha": "2026-01-25T05:19:29.271Z",
+        "descripcion": "Cambio de clave realizado"
+      },
+      {
+        "_id": "6975ab33b7558767d3b7752a",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 10,
+        "saldoAnterior": 12490,
+        "saldoFinal": 12480,
+        "fecha": "2026-01-25T05:33:39.139Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "6975ab56b7558767d3b7752b",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 40,
+        "saldoAnterior": 12480,
+        "saldoFinal": 12440,
+        "fecha": "2026-01-25T05:34:14.314Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "6975ab7ab7558767d3b7752c",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 300,
+        "saldoAnterior": 12440,
+        "saldoFinal": 12140,
+        "fecha": "2026-01-25T05:34:50.235Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "6975ab94b7558767d3b7752d",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 100,
+        "saldoAnterior": 12140,
+        "saldoFinal": 12040,
+        "fecha": "2026-01-25T05:35:16.738Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "6975ac69b7558767d3b7752e",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 100,
+        "saldoAnterior": 12040,
+        "saldoFinal": 11940,
+        "fecha": "2026-01-25T05:38:49.971Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "6975ac89b7558767d3b7752f",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 5,
+        "saldoAnterior": 11940,
+        "saldoFinal": 11935,
+        "fecha": "2026-01-25T05:39:21.162Z",
+        "descripcion": "Retiro desde cajero automático"
+      },
+      {
+        "_id": "6976bbee251517509b82110f",
+        "numeroCuenta": "1001",
+        "tipo": "CONSULTA",
+        "monto": 0,
+        "saldoAnterior": 11934.68,
+        "saldoFinal": 11934.68,
+        "fecha": "2026-01-26T00:57:18.820Z",
+        "descripcion": "CONSULTA realizado"
+      },
+      {
+        "_id": "6976bdf24db3de26aa9c5395",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 5,
+        "saldoAnterior": 11934.68,
+        "saldoFinal": 11929.68,
+        "fecha": "2026-01-26T01:05:54.279Z",
+        "descripcion": "Retiro desde cajero ATM01"
+      },
+      {
+        "_id": "6977dd849fcc7c13e28f2d02",
+        "numeroCuenta": "1001",
+        "tipo": "RETIRO",
+        "monto": 5,
+        "saldoAnterior": 11929.68,
+        "saldoFinal": 11924.68,
+        "fecha": "2026-01-26T21:32:52.106Z",
+        "descripcion": "Retiro desde cajero ATM01"
+      },
+      {
+        "_id": "6977de349fcc7c13e28f2d03",
+        "numeroCuenta": "1001",
+        "tipo": "CONSULTA",
+        "monto": 0,
+        "saldoAnterior": 11924.68,
+        "saldoFinal": 11924.68,
+        "fecha": "2026-01-26T21:35:48.612Z",
+        "descripcion": "CONSULTA realizado"
+      },
+      {
+        "_id": "6977ded59fcc7c13e28f2d04",
+        "numeroCuenta": "1002",
+        "tipo": "RETIRO",
+        "monto": 10,
+        "saldoAnterior": 1000,
+        "saldoFinal": 990,
+        "fecha": "2026-01-26T21:38:29.996Z",
+        "descripcion": "Retiro desde cajero ATM01"
+      },
+      {
+        "_id": "69780f68b937fd612e5fe536",
+        "numeroCuenta": "1001",
+        "tipo": "CONSULTA",
+        "monto": 0,
+        "saldoAnterior": 11924.68,
+        "saldoFinal": 11924.68,
+        "fecha": "2026-01-27T01:05:44.002Z",
+        "descripcion": "CONSULTA realizado"
+      }
+    ],
+    "usuarios": [
+      {
+        "_id": "69693f790a6ae5c7181e2621",
+        "numeroCuenta": "1001",
+        "nombre": "BRAULIO CASTILLO",
+        "clave": "2665",
+        "saldo": 11924.68,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-15T19:26:49.923Z",
+        "banco": "BANCO PICHINCHA",
+        "primeraVez": false
+      },
+      {
+        "_id": "69693f790a6ae5c7181e2622",
+        "numeroCuenta": "1002",
+        "nombre": "LUIS PéREZ",
+        "clave": "2665",
+        "saldo": 989.48,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-15T19:26:49.923Z",
+        "banco": "BANCO DE GUAYAQUIL",
+        "primeraVez": false
+      },
+      {
+        "_id": "69693f790a6ae5c7181e2623",
+        "numeroCuenta": "1003",
+        "nombre": "CARLOS RUIZ",
+        "clave": "2570",
+        "saldo": 205.76,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-15T19:26:49.923Z",
+        "banco": "BANCO DE GUAYAQUIL",
+        "primeraVez": false
+      },
+      {
+        "_id": "69693f790a6ae5c7181e2626",
+        "numeroCuenta": "1006",
+        "nombre": "SOFíA VEGA",
+        "clave": "4444",
+        "saldo": 600,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-15T19:26:49.923Z",
+        "banco": "BANCO PICHINCHA",
+        "primeraVez": true
+      },
+      {
+        "_id": "69693f790a6ae5c7181e2627",
+        "numeroCuenta": "1007",
+        "nombre": "DIEGO MORA",
+        "clave": "5555",
+        "saldo": 900,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-15T19:26:49.923Z",
+        "banco": "BANCO PICHINCHA",
+        "primeraVez": true
+      },
+      {
+        "_id": "69693f790a6ae5c7181e2628",
+        "numeroCuenta": "1008",
+        "nombre": "LUCíA SILVA",
+        "clave": "6666",
+        "saldo": 200,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-15T19:26:49.923Z",
+        "banco": "BANCO PICHINCHA",
+        "primeraVez": true
+      },
+      {
+        "_id": "696ea7054c94819c8878a8ca",
+        "numeroCuenta": "1009",
+        "nombre": "DANIEL RUAL",
+        "clave": "mongo2665",
+        "saldo": 50,
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-19T21:49:57.328Z",
+        "banco": "BANCO PICHINCHA",
+        "primeraVez": true
+      },
+      {
+        "_id": "6977e8559fcc7c13e28f2d05",
+        "numeroCuenta": "1010",
+        "nombre": "ALBERTO MACHUCA",
+        "clave": "2222",
+        "saldo": 50,
+        "banco": "BANCO PICHINCHA",
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-26T22:19:01.185Z",
+        "primeraVez": true
+      },
+      {
+        "_id": "6977e9ec9fcc7c13e28f2d06",
+        "numeroCuenta": "1011",
+        "nombre": "LUISA GONZALES",
+        "clave": "2570",
+        "saldo": 25,
+        "banco": "BANCO DEL PACÍFICO",
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-26T22:25:48.695Z",
+        "primeraVez": true
+      },
+      {
+        "_id": "6977ead99fcc7c13e28f2d07",
+        "numeroCuenta": "1004",
+        "nombre": "LUIS APONTE",
+        "clave": "2570",
+        "saldo": 60,
+        "banco": "BANCO DEL PACÍFICO",
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-26T22:29:45.000Z",
+        "primeraVez": true
+      },
+      {
+        "_id": "6977eaf99fcc7c13e28f2d08",
+        "numeroCuenta": "1005",
+        "nombre": "GINA RUALES",
+        "clave": "2665",
+        "saldo": 98,
+        "banco": "BANCO DEL PACÍFICO",
+        "estado": "ACTIVO",
+        "intentosFallidos": 0,
+        "fechaCreacion": "2026-01-26T22:30:17.755Z",
+        "primeraVez": true
+      }
+    ],
+    "configuracion": [
+      {
+        "_id": "69724b3f56b4e195b7826e70",
+        "bancosPermitidos": [
+          "BANCO PICHINCHA",
+          "BANCO DEL PACÍFICO",
+          "BANCO DE GUAYAQUIL"
+        ],
+        "comisionInterbancaria": 0.52,
+        "retiroMaximo": 300,
+        "denominaciones": [
+          5,
+          10,
+          20,
+          40,
+          50,
+          100
+        ],
+        "comisionConsulta": 0.32,
+        "comisionReporte": 0.32,
+        "fechaActualizacion": "2026-01-25T05:52:09.375Z",
+        "horarioOperativo": "24/7",
+        "limiteDepositoMaximo": 5000,
+        "maxIntentosClave": 3,
+        "moneda": "USD",
+        "nombreConfig": "Configuración Principal ATM",
+        "retiroMinimo": 5
+      },
+      {
+        "_id": "69780baab937fd612e5fe535",
+        "retiroMinimo": 5,
+        "retiroMaximo": 300,
+        "limiteDepositoMaximo": 5000,
+        "comisionInterbancaria": 0.52,
+        "comisionConsulta": 0.32,
+        "maxIntentosClave": 3,
+        "bancosPermitidos": [
+          "BANCO PICHINCHA",
+          "BANCO DEL PACÍFICO",
+          "BANCO DE GUAYAQUIL"
+        ],
+        "denominaciones": [
+          5,
+          10,
+          20,
+          40,
+          50,
+          100
+        ]
+      },
+      {
+        "_id": "6978101eb937fd612e5fe537",
+        "retiroMinimo": 5,
+        "retiroMaximo": 300,
+        "limiteDepositoMaximo": 5000,
+        "comisionInterbancaria": 0.52,
+        "comisionConsulta": 0.32,
+        "maxIntentosClave": 3,
+        "bancosPermitidos": [
+          "BANCO PICHINCHA",
+          "BANCO DEL PACÍFICO",
+          "BANCO DE GUAYAQUIL"
+        ],
+        "denominaciones": [
+          5,
+          10,
+          20,
+          40,
+          50,
+          100
+        ]
+      }
+    ],
+    "admins": [
+      {
+        "_id": "6972806af5014bf1981b5d2c",
+        "usuario": "9999",
+        "clave": "2570",
+        "rol": "admin",
+        "estado": "ACTIVO"
+      }
+    ],
+    "cajero": [
+      {
+        "_id": "6976b8fb7fce19c68d233e01",
+        "codigoCajero": "ATM01",
+        "ubicacion": "QUITO - CENTRO",
+        "saldoDisponible": 14980,
+        "estado": "OPERATIVO",
+        "ultimaActualizacion": "2026-01-26T21:38:29.995Z",
+        "denominaciones": [
+          5,
+          10,
+          20,
+          40,
+          50,
+          100
+        ],
+        "retiroMaximoPorTransaccion": 300
+      }
+    ]
+  }
+}

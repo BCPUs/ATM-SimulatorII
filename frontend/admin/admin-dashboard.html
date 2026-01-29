@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Admin - ATM Simulator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a1f44; color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #111; padding: 25px; text-align: center; border-bottom: 3px solid #0066cc; }
+    header h1 { margin: 0; font-size: 30px; }
+    .container { max-width: 1200px; margin: 40px auto; padding: 20px; flex: 1; }
+    .welcome { text-align: center; margin-bottom: 50px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+    .card { background: #222; border-radius: 15px; padding: 40px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+    .card:hover { transform: translateY(-12px); background: #333; box-shadow: 0 15px 30px rgba(0,102,204,0.4); }
+    .card h3 { margin: 0 0 15px; font-size: 24px; color: #4da6ff; }
+    .card p { margin: 0; color: #ddd; font-size: 16px; }
+    .logout { text-align: center; margin: 50px 0; }
+    .logout button { padding: 15px 40px; background: #cc0000; font-size: 18px; border-radius: 8px; border: none; cursor: pointer; }
+    footer { background: #111; padding: 20px; text-align: center; font-size: 14px; color: #aaa; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PANEL DE ADMINISTRACIÓN</h1>
+</header>
+
+<div class="container">
+  <div class="welcome">
+    <h2>Bienvenido, Administrador</h2>
+    <p>Selecciona una opción para comenzar</p>
+  </div>
+
+  <div class="cards">
+    <div class="card" onclick="location.href='admin-usuarios.html'">
+      <h3>Gestión de Usuarios</h3>
+      <p>Crear, editar y bloquear cuentas</p>
+    </div>
+    <div class="card" onclick="location.href='admin-configuracion.html'">
+      <h3>Configuración del Cajero</h3>
+      <p>Límites, comisiones y parámetros</p>
+    </div>
+    <div class="card" onclick="location.href='admin-reportes.html'">
+      <h3>Reportes Globales</h3>
+      <p>Estadísticas y búsqueda de transacciones</p>
+    </div>
+  </div>
+
+  <div class="logout">
+    <button onclick="if(confirm('¿Cerrar sesión?')){localStorage.removeItem('adminLoggedIn'); location.href='admin-login.html'}">
+      Cerrar Sesión
+    </button>
+  </div>
+</div>
+
+<script>
+// Protección básica (opcional, ya no es necesario por localStorage)
+if (!localStorage.getItem("adminLoggedIn")) {
+  location.href = "admin-login.html";
+}
+</script>
+</body>
+</html>
