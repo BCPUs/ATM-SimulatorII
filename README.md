@@ -55,19 +55,15 @@ Simulates real banking operations for users and includes a secure admin panel fo
 
 ## Installation
 
-1. Clone the repository:
-   git clone https://github.com/yourusername/ATM-SimulatorII.git
-   cd ATM-SimulatorII
-
-Install dependencies: npm install
-Configure MongoDB connection in db.js (or use .env): const uri = "mongodb://127.0.0.1:27017/atm_simulator";
-Start MongoDB (local)
-Run the server:node server.js
-Open in browser:
-User interface: http://localhost:3000/cajero.html
-Admin login: http://localhost:3000/admin/admin-login.html
-
-Default Credentials
-
-Test user (example): 1001 / 1234 (change PIN on first login)
-Admin: 9999 / 2570
+  1. Clone the repository:
+     git clone https://github.com/yourusername/ATM-SimulatorII.git
+  2. Install dependencies: npm install
+  3. Configure MongoDB connection in db.js (or use .env): const uri = "mongodb://127.0.0.1:27017/atm_simulator";
+  4. Start MongoDB (local)
+  5. Run the server:node server.js
+  6. Open in browser:
+    User interface: http://localhost:3000/cajero.html
+    Admin login: http://localhost:3000/admin/admin-login.html
+      ## Default Credentials
+      Test user (example): 1001 / 1234 (change PIN on first login)
+      Admin: 9999 / 2570
